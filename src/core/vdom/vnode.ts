@@ -14,6 +14,8 @@ export default class VNode {
   context?: Component;
   componentOptions?: VNodeCopomemntOptions;
   asyncFactory?: Function;
+  parent: VNode | undefined | null;
+  componentInstance?: Component;
 
   isComment: boolean;
   isCloned: boolean;

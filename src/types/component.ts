@@ -66,6 +66,7 @@ export declare class Component {
   ) => VNode
 
   // private properties
+  // private properties
   _uid: number | string
   _name: string // this only exists in dev mode
   _isVue: true
@@ -73,10 +74,9 @@ export declare class Component {
   _self: Component
   _renderProxy: Component
   _renderContext?: Component
-  // @todo: 待实现
   _watcher: Watcher | null
-  // _scope: EffectScope // v3 暂时不考虑
-  // _computedWatchers: { [key: string]: Watcher }
+  // _scope: EffectScope
+  _computedWatchers: { [key: string]: Watcher }
   _data: Record<string, any>
   _props: Record<string, any>
   _events: Record<string, any>
@@ -107,5 +107,13 @@ export declare class Component {
     refElm?: any
   ) => any;
 
-
+  // 私有
+  _isComponent?: true;
+  _propKeys?: Array<string>;
+  _parentVnode?: VNode;
+  _parentListeners?: object | null;
+  _renderChildren?: Array<VNode> | null;
+  _componentTag: string | null;
+  _scopeId: string | null;
+  _base: typeof Component;
 }

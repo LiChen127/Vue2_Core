@@ -42,6 +42,49 @@ export type ComponentOptions = {
   deactivated?: Function;
   beforeDestroy?: Function;
   destroyed?: Function;
+  errorCaptured?: () => boolean | void
+  serverPrefetch?: Function
+  // renderTracked?(e: DebuggerEvent): void
+  // renderTriggerd?(e: DebuggerEvent): void
+
+  // asstest
+  directives?: { [key: string]: object };
+  components?: { [key: string]: Component };
+  transitions?: { [key: string]: object };
+  filters?: { [key: string]: Function };
+
+  // context
+  provide?: Record<string, | symbol | any> | (() => Record<string | symbol, any>);
+  inject?:
+  | { [key: string]: string | symbol | { from?: string | symbol; default?: any } }
+  | Array<string>
+
+  // component v-model customization
+  model?: {
+    prop?: string;
+    event?: string;
+  }
+  // misc
+  parent?: Component;
+  mixins?: Array<object>;
+  name?: string;
+  extends?: Component | object;
+  delimiters?: [string, string];
+  comments?: boolean;
+  inheritAttrs?: boolean;
+
+  // Legacy API
+  abstract?: any;
+
+  // private
+  _isComponent?: true;
+  _propKeys?: Array<string>;
+  _parentVnode?: VNode
+  _parentListeners?: object | null
+  _renderChildren?: Array<VNode> | null
+  _componentTag: string | null
+  _scopeId: string | null
+  _base: typeof Component;
 }
 
 // prop配置
@@ -57,5 +100,5 @@ export type InternalComponentOptions = {
   parent: Component;
   _parentVnode: VNode;
   render?: Function;
-  staticRednerFns?: Array<Function>;
+  staticRenderFns?: Array<Function>;
 }

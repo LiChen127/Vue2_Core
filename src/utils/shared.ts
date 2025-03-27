@@ -51,3 +51,31 @@ export function remove(arr: Array<any>, item: any): Array<any> | void {
     }
   }
 }
+
+export function cached<R>(fn: (str: string) => R): (str: string) => R {
+  const cache = Object.create(null);
+  return (str: string) => {
+    const hit = cache[str];
+    // 命中的话，返回，没命中缓存，执行fn，并缓存
+    return hit || (cache[str] = fn(str));
+  };
+}
+
+export function toArray(list: any, start?: number): Array<any> {
+  start = start || 0;
+  let i = list.length - start;
+  const ret: Array<any> = new Array(i);
+  while (i--) {
+    ret[i] = list[i + start];
+  }
+  return ret;
+}
+
+export function extend(to: Record<PropertyKey, any>, _from: Record<PropertyKey, any>): Record<PropertyKey, any> {
+  for (const key in _from) {
+    to[key] = _from[key];
+  }
+  return to;
+}
+
+export function noop(a?: any, b?: any, c?: any) { }
