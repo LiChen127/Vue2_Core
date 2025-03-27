@@ -76,5 +76,5 @@ export function cloneVNode(vnode: VNode): VNode {
     vnode.asyncFactory
   );
 
-  return cloneVNode;
+  return clonedVnode;
 }
