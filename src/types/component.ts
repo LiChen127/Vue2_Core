@@ -75,7 +75,7 @@ export declare class Component {
   _renderContext?: Component
   // @todo: 待实现
   _watcher: Watcher | null
-  // _scope: EffectScope
+  // _scope: EffectScope // v3 暂时不考虑
   // _computedWatchers: { [key: string]: Watcher }
   _data: Record<string, any>
   _props: Record<string, any>

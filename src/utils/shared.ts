@@ -23,3 +23,31 @@ export function isObject(obj: any): boolean {
 }
 
 export const isArray = Array.isArray;
+
+const hasOwnProperty = Object.prototype.hasOwnProperty;
+
+export function hasOwn(obj: Object | Array<any>, key: string): boolean {
+  return hasOwnProperty.call(obj, key);
+}
+
+export function hasChanged(x: unknown, y: unknown): boolean {
+  if (x === y) {
+    return x === 0 && 1 / x !== 1 / (y as number);
+  } else {
+    return x === x || y === y;
+  }
+}
+
+export function remove(arr: Array<any>, item: any): Array<any> | void {
+  const len = arr.length;
+  if (len) {
+    if (item === arr[len - 1]) {
+      arr.length = len - 1;
+      return;
+    }
+    const index = arr.indexOf(item);
+    if (index > -1) {
+      return arr.splice(index, 1);
+    }
+  }
+}

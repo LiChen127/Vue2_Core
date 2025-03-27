@@ -1,9 +1,8 @@
 import { Component } from "../../types/component"
 import { nextTick } from "../../utils/next-tick"
+import { activateChildComponent, callHook } from "../instance/lifecycle"
 import Dep, { cleanupDepts } from "./dep"
 import Watcher from "./watcher"
-
-
 
 export const MAX_UPDATE_COUNT = 100
 

@@ -20,7 +20,7 @@ export interface DepTarget {
 }
 
 /**
- * 侦测依赖
+ * 依赖存储类
  */
 export default class Dep {
   static target: DepTarget | null;
@@ -30,6 +30,7 @@ export default class Dep {
 
   constructor() {
     this.id = uid++;
+    // 依赖存储数组
     this.subs = [];
   }
 
@@ -44,14 +45,20 @@ export default class Dep {
       // pendingCleanupDepth.push(this);
     }
   }
-
+  /**
+   * 将依赖添加到Dep.target中
+   * @param info 
+   */
   depend(info?: any) {
     if (Dep.target) {
       Dep.target.addDep(this);
       // DEV track todo
     }
   }
-
+  /**
+   * 遍历数组调用所有依赖的更新方法
+   * @param info 
+   */
   notify(info?: any) {
     const subs = this.subs.filter(s => s) as DepTarget[];
     for (let i = 0; i < subs.length; i++) {

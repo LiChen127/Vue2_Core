@@ -1,6 +1,6 @@
 import { Component } from "../../types/component";
 import { SimpleSet } from "../../utils/env";
-import { isArray, isFunction, isObject } from "../../utils/shared";
+import { isArray, isFunction, isObject, remove } from "../../utils/shared";
 import VNode from "../vdom/vnode";
 import Dep, { DepTarget, popTarget, pushTarget } from "./dep";
 import { queueWatcher } from "./scheduler";
@@ -171,9 +171,6 @@ export default class Watcher implements DepTarget {
   }
 
   teardown() {
-    if (this.vm && !this.vm._isBeingDestroyed) {
-      remove(this.vm._scope.effects, this);
-    }
     if (this.active) {
       let i = this.deps.length;
       while (i--) {

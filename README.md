@@ -1,4 +1,6 @@
-# 从Vue2源码中逐步剥离的Vue2核心功能实现，并对于一些知识点和设计理念进行补充
+# 从Vue2源码中逐步剥离的, 实现功能完备的Vue2-Core，并对于一些创新和设计进行思考和解释
+
+**每次都多问一下为什么**
 
 ## Observer
 
@@ -32,13 +34,133 @@ Angular和React的做法是很粗粒度的做法，当state change, 它们不知
 
 Vue2引入虚拟DOM，粒度较小，**一个状态所绑定的依赖不再是具体的DOM节点，而是一个组件**
 
-#### 流程
-
-1. 状态改变
-2. 通知组件
-3. 组件内部进行 diff patch
-
 Vue实际上可以调整粒度的本质上原因还是采用了Observer的设计，通过这个设计，它可以随意控制这种粒度，特别的高明。
+
+#### 变化侦测具体如何实现?
+
+##### 1.如何知道某个属性发生了变化?
+
+我们考虑Vue2的设计。
+采用Object.defineProperty()
+
+```js
+// demo\observer\index.html
+    let books = {};
+    let val = 3000;
+    Object.defineProperty(books, 'count', {
+      enumerable: true,
+      configurable: true,
+      get() {
+        console.log('get it');
+        return val;
+      },
+      set(newVal) {
+        console.log('set it');
+        val = newVal;
+      }
+    })
+```
+
+##### 2.如何收集依赖?
+
+我们观测数据的目的是，数据属性/值变化时，通知使用该数据的组件更新, 通过vdom渲染
+
+所以，应该在getter中收集依赖，在setter中更新依赖。
+
+##### 3.依赖是什么?
+
+谁用到了响应式数据，谁就是依赖。
+
+##### 3.依赖收集在哪里?
+
+vue中把依赖封装成一个独立的数组对象。
+这样的话，每一个响应式数据都会有一个独立的依赖数组。
+
+```js
+// demo/observer/dep.js
+export default class Dep {
+  constructor() {
+    this.subs = [];
+  }
+
+  addSub(sub) {
+    this.subs.push(sub);
+  }
+
+  removeSub(sub) {
+    if (this.subs.length) {
+      const index = this.subs.indexOf(sub);
+      index > -1 ? this.subs.splice(index, 1) : null;
+    }
+  }
+
+  depend() {
+    if (window.target) {
+      this.addSub(window.target);
+    }
+  }
+
+  notify() {
+    const subs = this.subs.slice();
+    for (let i = 0; i < subs.length; i++) {
+      subs[i].update();
+    }
+  }
+}
+
+// demo/observer/observer.js
+function defineReactive(data, key, val) {
+  let dep = new Dep();
+  Object.defineProperty(data, key, {
+    enumerable: true,
+    configurable: true,
+    get: function () {
+      // 收集依赖
+      dep.depend();
+      return val;
+    },
+    set: function (newVal) {
+      if (newVal === val) {
+        return;
+      }
+      val = newVal;
+      // 更新notify
+      dep.notify();
+    }
+  })
+}
+```
+
+##### 4. 优化响应式数据更新链路
+
+在Vue中，还实现了一个Watcher类，用来管理依赖，当数据更新时，会通知Watcher，Watcher会更新DOM。
+
+Watcher做了什么事情?
+
+Watcher实际上会做的是在全局读取数据，进行初始化观察。
+
+1. 依赖触发，执行cb, 访问数据属性时触发`getter`, 将当前的`Watcher`收集到对应的`Dep`中;
+2. 更新机制: 数据变化时，`Dep`通知所有关联的`Watcher`执行`update()`, 最终触发cb, 更新视图/相关状态。
+
+**为什么要这么做?**
+
+很多的资料并没有告诉我们。
+1. 解耦: 将依赖和更新分离，便于维护，统一用`Watcher`管理不同场景的更新逻辑;
+2. 优化性能: 在Watcher中实际上实现了异步队列，避免频繁更新，提高性能;
+3. 精准性: 每个data只点对点通知直接依赖的`Watcher`，足够的原子化和精确。
+
+#### Array的变化侦测
+
+##### 为什么Array和Object要分开处理?
+
+js中改变数组内容的方法很多, 比如`push`, `pop`\ `shift`\ `unshift`\ `splice`\ `sort`\ `reverse`, 但是它们不会触发属性的`setter`。
+本质上是因为`length`属性或者数组的索引属性无法被`Object.defineProperty`所监听;
+
+##### Array的变化侦测如何做的
+
+1. 重写数组的方法, `push`, `pop`\ `shift`\ `unshift`\ `splice`\ `sort`\ `reverse`, 使得这些方法调用时，既可以执行原生操作，又可以手动触发更新
+2. 对数组元素进行响应式更新(只要不是Array)
+3. 无法检测的索引操作怎么解决? `Vue.set` && `vm.$set`
 
 ## VDOM
 
